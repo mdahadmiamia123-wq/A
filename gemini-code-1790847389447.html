@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>বিডি টিকটক ট্রাস্টেড - BD TikTok Trusted</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background-color: #0f172a; color: #f8fafc; }
+
+        /* Header */
+        header { background: #1e293b; color: #38bdf8; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0284c7; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); }
+        header h1 { font-size: 20px; font-weight: bold; color: #f43f5e; display: flex; align-items: center; gap: 8px; }
+        .menu-btn { font-size: 26px; cursor: pointer; background: none; border: none; color: #f8fafc; }
+
+        /* Sidebar Drawer */
+        .sidebar { position: fixed; top: 0; right: -260px; width: 260px; height: 100%; background: #0f172a; border-left: 1px solid #334155; transition: 0.3s ease; z-index: 1000; padding-top: 60px; }
+        .sidebar.active { right: 0; }
+        .sidebar a { padding: 16px 24px; text-decoration: none; font-size: 16px; color: #e2e8f0; display: block; border-bottom: 1px solid #1e293b; cursor: pointer; font-weight: 500; }
+        .sidebar a:hover { background: #1e293b; color: #38bdf8; }
+        .close-sidebar { position: absolute; top: 15px; right: 20px; font-size: 28px; cursor: pointer; color: #94a3b8; }
+
+        /* Container & Pages */
+        .container { max-width: 600px; margin: 20px auto; padding: 0 15px; }
+        .page { display: none; }
+        .page.active { display: block; }
+
+        /* Live Activity Ticker */
+        .live-ticker { background: #0284c7; color: #ffffff; padding: 10px 15px; margin-bottom: 20px; border-radius: 8px; font-size: 13px; font-weight: 600; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+
+        /* Balance Info Card */
+        .user-card { background: #1e293b; padding: 16px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border: 1px solid #334155; }
+        .balance-badge { background: #e11d48; color: white; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 15px; }
+
+        /* Cards & Style */
+        .card { background: #1e293b; padding: 20px; border-radius: 12px; border: 1px solid #334155; margin-bottom: 20px; }
+        .section-title { font-size: 18px; color: #38bdf8; border-bottom: 2px solid #0284c7; padding-bottom: 8px; margin-bottom: 16px; }
+
+        /* Task Items */
+        .task-card { background: #0f172a; padding: 16px; border-radius: 10px; margin-bottom: 16px; border-left: 4px solid #f43f5e; border: 1px solid #334155; }
+        .task-card h3 { font-size: 16px; color: #f8fafc; margin-bottom: 6px; }
+        .task-card p { font-size: 13px; color: #94a3b8; margin-bottom: 10px; line-height: 1.4; }
+        .reward-tag { color: #22c55e; font-weight: bold; font-size: 16px; margin-bottom: 10px; display: block; }
+
+        /* Buttons */
+        .btn { background: #2563eb; color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; text-decoration: none; font-size: 14px; font-weight: 600; display: inline-block; }
+        .btn:hover { background: #1d4ed8; }
+        .btn-tiktok { background: #f43f5e; }
+        .btn-tiktok:hover { background: #e11d48; }
+        .btn-proof { background: #059669; margin-left: 8px; }
+        .btn-proof:hover { background: #047857; }
+
+        /* Forms & Inputs */
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; margin-bottom: 6px; font-size: 14px; color: #cbd5e1; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 8px; font-size: 14px; }
+        .form-group input:focus { outline: none; border-color: #38bdf8; }
+
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 2000; }
+        .modal-content { background: #1e293b; padding: 24px; border-radius: 12px; max-width: 420px; width: 90%; border: 1px solid #334155; }
+        .close-btn { float: right; cursor: pointer; font-size: 24px; color: #94a3b8; }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <h1>🎵 বিডি টিকটক ট্রাস্টেড</h1>
+        <button class="menu-btn" id="menuBtn" style="display:none;" onclick="toggleSidebar()">☰</button>
+    </header>
+
+    <!-- Sidebar Drawer -->
+    <div class="sidebar" id="sidebar">
+        <span class="close-sidebar" onclick="toggleSidebar()">&times;</span>
+        <a onclick="showPage('home')">🏠 হোম</a>
+        <a onclick="showPage('tasks')">📋 কার্যাসমূহ (Tasks)</a>
+        <a onclick="showPage('refer')">👥 রেফারেল ইনকাম (১০০ টাকা)</a>
+        <a onclick="showPage('withdraw')">💰 উইথড্র করুন</a>
+        <a onclick="logout()">🚪 লগআউট</a>
+    </div>
+
+    <div class="container">
+
+        <!-- 1. AUTH PAGE (লগইন/রেজিস্ট্রেশন) -->
+        <div id="authPage" class="page active">
+            <div class="card">
+                <h2 class="section-title" id="authTitle" style="text-align:center;">রেজিস্ট্রেশন করুন</h2>
+                <p style="font-size: 14px; color: #22c55e; margin-bottom: 20px; text-align: center; font-weight: bold;">🎁 রেজিস্ট্রেশন করলেই সাথে সাথে ৫৭ টাকা বোনাস!</p>
+                
+                <div class="form-group" id="nameGroup">
+                    <label>আপনার নাম:</label>
+                    <input type="text" id="authName" placeholder="আপনার পুরো নাম">
+                </div>
+                <div class="form-group">
+                    <label>ইমেইল ঠিকানা:</label>
+                    <input type="email" id="authEmail" placeholder="example@gmail.com">
+                </div>
+                <div class="form-group">
+                    <label>পাসওয়ার্ড:</label>
+                    <input type="password" id="authPassword" placeholder="******">
+                </div>
+                <button class="btn btn-tiktok" style="width: 100%; padding: 14px; margin-top: 10px;" id="authSubmitBtn" onclick="handleAuth()">সাইনআপ করুন (৫৭ টাকা বোনাস)</button>
+                
+                <p style="margin-top: 20px; font-size: 14px; text-align: center; color: #94a3b8;">
+                    <span id="authToggleText">ইতিমধ্যে একাউন্ট আছে?</span> 
+                    <a href="#" style="color: #38bdf8; font-weight: bold; text-decoration: none;" onclick="toggleAuthMode()">লগইন করুন</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- 2. HOME PAGE -->
+        <div id="homePage" class="page">
+            <div class="live-ticker">
+                🔔 <span id="liveTickerText">রাকিবুল হাসান ৫০০ টাকা উইথড্র দিয়েছেন এইমাত্র...</span>
+            </div>
+
+            <div class="user-card">
+                <div>
+                    <div style="font-size: 13px; color: #94a3b8;">স্বাগতম ইউজার,</div>
+                    <div style="font-size: 18px; font-weight: bold; color: #38bdf8;" id="userNameDisplay">User</div>
+                </div>
+                <div class="balance-badge">ব্যালেন্স: <span id="userBalance">57</span> BDT</div>
+            </div>
+
+            <div class="card">
+                <h3 class="section-title">প্লাটফর্ম নির্দেশনা</h3>
+                <p style="font-size: 14px; line-height: 1.6; color: #cbd5e1;">
+                    ১. ডান পাশের থ্রি-লাইন (☰) মেনুতে চাপ দিয়ে <b>'কার্যাসমূহ'</b> অপশনে গিয়ে কাজ শুরু করুন।<br>
+                    ২. টিকটক কাজের ভিডিও লিংক ভিজিট করে কমেন্ট ও ফলো করার পর স্ক্রিনশট প্রুফ দিন।<br>
+                    ৩. আপনার একাউন্টে সর্বনিম্ন <b>৫০০ টাকা</b> হলে বিকাশে বা নগদে উইথড্র দিতে পারবেন।
+                </p>
+            </div>
+        </div>
+
+        <!-- 3. TASKS PAGE -->
+        <div id="tasksPage" class="page">
+            <h2 class="section-title">টিকটক কার্যাসমূহ (TikTok Tasks)</h2>
+
+            <!-- Task 1 -->
+            <div class="task-card">
+                <h3>১. টিকটক ভিডিও কমেন্ট ও লাইক টাস্ক ১</h3>
+                <p>ভিডিওটি ওপেন করে একটি সুন্দর কমেন্ট করুন এবং স্ক্রিনশট নিন।</p>
+                <span class="reward-tag">৳ ১৫০ BDT</span>
+                <a href="https://vm.tiktok.com/ZSbS3RAgy/" target="_blank" class="btn btn-tiktok">কাজ করুন</a>
+                <button class="btn btn-proof" onclick="openProofModal('টিকটক ভিডিও টাস্ক ১', 150)">প্রুফ দিন</button>
+            </div>
+
+            <!-- Task 2 -->
+            <div class="task-card">
+                <h3>২. টিকটক ভিডিও কমেন্ট ও লাইক টাস্ক ২</h3>
+                <p>ভিডিওটি ওপেন করে একটি সুন্দর কমেন্ট করুন এবং স্ক্রিনশট জমা দিন।</p>
+                <span class="reward-tag">৳ ১২০ BDT</span>
+                <a href="https://vm.tiktok.com/ZSbSctcyp/" target="_blank" class="btn btn-tiktok">কাজ করুন</a>
+                <button class="btn btn-proof" onclick="openProofModal('টিকটক ভিডিও টাস্ক ২', 120)">প্রুফ দিন</button>
+            </div>
+
+            <!-- Task 3 -->
+            <div class="task-card">
+                <h3>৩. টিকটক ভিডিও কমেন্ট ও লাইক টাস্ক ৩</h3>
+                <p>ভিডিওটিতে কমেন্ট করুন এবং স্ক্রিনশট তুলে নিচে প্রুফ আপলোড করুন।</p>
+                <span class="reward-tag">৳ ১১০ BDT</span>
+                <a href="https://vm.tiktok.com/ZSbS3eqcm/" target="_blank" class="btn btn-tiktok">কাজ করুন</a>
+                <button class="btn btn-proof" onclick="openProofModal('টিকটক ভিডিও টাস্ক ৩', 110)">প্রুফ দিন</button>
+            </div>
+
+            <!-- Task 4 -->
+            <div class="task-card">
+                <h3>৪. টিকটক ভিডিও কমেন্ট ও লাইক টাস্ক ৪</h3>
+                <p>ভিডিও লিংক ওপেন করে লাইক-কমেন্ট শেষে স্ক্রিনশট আপলোড দিন।</p>
+                <span class="reward-tag">৳ ৮০ BDT</span>
+                <a href="https://vm.tiktok.com/ZSbScGXbf/" target="_blank" class="btn btn-tiktok">কাজ করুন</a>
+                <button class="btn btn-proof" onclick="openProofModal('টিকটক ভিডিও টাস্ক ৪', 80)">প্রুফ দিন</button>
+            </div>
+
+            <!-- Task 5 -->
+            <div class="task-card">
+                <h3>৫. প্রোফাইল ফলো টাস্ক (mdahadmia1234)</h3>
+                <p>লিংকে চাপ দিয়ে ইউজারনেম <b>mdahadmia1234</b> আইডিটিকে ফলো করে স্ক্রিনশট দিন।</p>
+                <span class="reward-tag">৳ ৫০ BDT</span>
+                <a href="https://vm.tiktok.com/ZSbScwqS5/" target="_blank" class="btn btn-tiktok">কাজ করুন</a>
+                <button class="btn btn-proof" onclick="openProofModal('প্রোফাইল ফলো টাস্ক', 50)">প্রুফ দিন</button>
+            </div>
+        </div>
+
+        <!-- 4. REFERRAL PAGE -->
+        <div id="referPage" class="page">
+            <div class="card">
+                <h2 class="section-title">রেফারেল ইনকাম</h2>
+                <p style="font-size: 14px; margin-bottom: 15px; color: #cbd5e1;">আপনার শেয়ার করা লিংকে কোনো বন্ধু একাউন্ট খুলে ২টি টাস্ক শেষ করার পর রেফার কনফার্ম করলে আপনার একাউন্টে <b>১০০ টাকা</b> যুক্ত হবে।</p>
+                
+                <div class="form-group">
+                    <label>আপনার কাস্টম রেফারেল লিংক:</label>
+                    <input type="text" id="referLink" value="" readonly>
+                </div>
+                <button class="btn btn-tiktok" style="width:100%;" onclick="copyReferLink()">লিংক কপি করুন</button>
+
+                <hr style="border-color: #334155; margin: 20px 0;">
+
+                <div class="form-group">
+                    <label>রেফারকৃত বন্ধুর ইউজার আইডি (২টি কাজ শেষে বোনাস ক্লাইম করুন):</label>
+                    <input type="text" id="referredFriendId" placeholder="বন্ধুর ইমেইল বা আইডি দিন">
+                </div>
+                <button class="btn btn-proof" style="width:100%; margin: 0;" onclick="claimReferralBonus()">রেফার বোনাস যোগ করুন (১০০ টাকা)</button>
+                
+                <div style="margin-top:20px; background:#0f172a; padding:15px; border-radius:8px;">
+                    <p style="font-size:14px; color:#38bdf8;">সফল রেফার সংখ্যা: <b id="referCount">০</b> জন</p>
+                    <p style="font-size:13px; color:#22c55e; margin-top:5px;">রেফারেল বোনাস অর্জিত: <b id="referEarnings">০</b> টাকা</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. WITHDRAW PAGE -->
+        <div id="withdrawPage" class="page">
+            <div class="card">
+                <h2 class="section-title">উইথড্র অপশন</h2>
+                <div style="background: #1e1b4b; border-left: 4px solid #a855f7; padding: 12px; font-size: 13px; margin-bottom: 16px; color: #e9d5ff;">
+                    ℹ️ সর্বনিম্ন উইথড্র পরিমাণ ৫০০ টাকা।
+                </div>
+                <div class="form-group">
+                    <label>পেমেন্ট মেথড:</label>
+                    <select id="withdrawMethod">
+                        <option value="bkash">বিকাশ (bKash Personal)</option>
+                        <option value="nagad">নগদ (Nagad Personal)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>মোবাইল নম্বর:</label>
+                    <input type="text" id="withdrawPhone" placeholder="017xxxxxxxx">
+                </div>
+                <div class="form-group">
+                    <label>পরিমাণ (সর্বনিম্ন ৫০০ টাকা):</label>
+                    <input type="number" id="withdrawAmount" placeholder="500">
+                </div>
+                <button class="btn btn-tiktok" style="width: 100%; padding: 12px;" onclick="handleWithdraw()">উইথড্র রিকোয়েস্ট দিন</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Proof Submit Modal -->
+    <div id="proofModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeProofModal()">&times;</span>
+            <h3 style="margin-bottom: 10px; color: #38bdf8;">কাজের প্রুফ জমা দিন</h3>
+            <p id="modalTaskName" style="font-size: 13px; color: #cbd5e1; margin-bottom: 15px;"></p>
+            
+            <div class="form-group">
+                <label>আপনার টিকটক ইউজারনেম:</label>
+                <input type="text" id="proofUsername" placeholder="@yourusername">
+            </div>
+            
+            <div class="form-group">
+                <label>কাজের স্ক্রিনশট ফাইল আপলোড করুন:</label>
+                <input type="file" id="proofFile" accept="image/*" style="padding: 8px;">
+            </div>
+
+            <button class="btn btn-proof" style="width: 100%; padding: 12px; margin-top: 10px;" onclick="submitProof()">প্রুফ জমা দিন</button>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let isLoginMode = false;
+        let activeTaskReward = 0;
+
+        // Live Ticker Updates
+        const liveUpdates = [
+            "রাকিবুল হাসান ৫০০ টাকা উইথড্র দিয়েছেন এইমাত্র...",
+            "সাদিয়া ইসলাম টিকটক টাস্ক সম্পূর্ণ করে ১৫০ টাকা পেয়েছেন",
+            "মেহেদী হাসান ৫০০ টাকা বিকাশে উইথড্র পেয়েছেন",
+            "আরিফুল ইসলাম ১ জন রেফার করে ১০০ টাকা বোনাস পেয়েছেন",
+            "সুমাইয়া আক্তার নগদে ৫০০ টাকা রিসিভ করেছেন"
+        ];
+        let tickerIndex = 0;
+        setInterval(() => {
+            tickerIndex = (tickerIndex + 1) % liveUpdates.length;
+            const el = document.getElementById('liveTickerText');
+            if(el) el.innerText = liveUpdates[tickerIndex];
+        }, 3500);
+
+        // Auto Load Logged in User on Refresh
+        window.onload = function() {
+            const savedSession = localStorage.getItem('current_logged_user');
+            if(savedSession) {
+                currentUser = JSON.parse(localStorage.getItem('user_' + savedSession));
+                if(currentUser) {
+                    updateUserUI();
+                    showPage('home');
+                }
+            }
+        };
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId + 'Page').classList.add('active');
+            document.getElementById('sidebar').classList.remove('active');
+        }
+
+        function toggleAuthMode() {
+            isLoginMode = !isLoginMode;
+            document.getElementById('authTitle').innerText = isLoginMode ? "লগইন করুন" : "রেজিস্ট্রেশন করুন";
+            document.getElementById('authSubmitBtn').innerText = isLoginMode ? "লগইন" : "সাইনআপ করুন (৫৭ টাকা বোনাস)";
+            document.getElementById('authToggleText').innerText = isLoginMode ? "একাউন্ট নেই?" : "ইতিমধ্যে একাউন্ট আছে?";
+            document.getElementById('nameGroup').style.display = isLoginMode ? "none" : "block";
+        }
+
+        function handleAuth() {
+            const email = document.getElementById('authEmail').value.trim().toLowerCase();
+            const password = document.getElementById('authPassword').value.trim();
+            const name = document.getElementById('authName').value.trim() || "User";
+
+            if(!email || !password) {
+                alert("অনুগ্রহ করে সঠিক ইমেইল এবং পাসওয়ার্ড দিন!");
+                return;
+            }
+
+            if(!isLoginMode) { // Registration Mode
+                if(localStorage.getItem('user_' + email)) {
+                    alert("এই ইমেইল দিয়ে ইতিমধ্যে একাউন্ট খোলা রয়েছে! লগইন করুন।");
+                    return;
+                }
+
+                // New User Creation
+                currentUser = {
+                    name: name,
+                    email: email,
+                    password: password,
+                    balance: 57,
+                    refers: 0,
+                    tasksCompleted: 0
+                };
+
+                localStorage.setItem('user_' + email, JSON.stringify(currentUser));
+                localStorage.setItem('current_logged_user', email);
+                alert("রেজিস্ট্রেশন সফল হয়েছে! ৫৭ টাকা বোনাস আপনার একাউন্টে যুক্ত হয়েছে।");
+            } else { // Login Mode
+                const savedUser = localStorage.getItem('user_' + email);
+                if(!savedUser) {
+                    alert("ভুল ইমেইল অথবা একাউন্টটি পাওয়া যায়নি! সঠিক তথ্য দিয়ে চেষ্টা করুন।");
+                    return;
+                }
+
+                const parsedUser = JSON.parse(savedUser);
+                if(parsedUser.password !== password) {
+                    alert("ভুল পাসওয়ার্ড! আবার চেষ্টা করুন।");
+                    return;
+                }
+
+                currentUser = parsedUser;
+                localStorage.setItem('current_logged_user', email);
+                alert("সফলভাবে লগইন হয়েছে!");
+            }
+
+            updateUserUI();
+            showPage('home');
+        }
+
+        function updateUserUI() {
+            if(!currentUser) return;
+            document.getElementById('userNameDisplay').innerText = currentUser.name;
+            document.getElementById('userBalance').innerText = currentUser.balance;
+            document.getElementById('referCount').innerText = currentUser.refers;
+            document.getElementById('referEarnings').innerText = (currentUser.refers * 100);
+            document.getElementById('referLink').value = window.location.origin + window.location.pathname + "?ref=" + currentUser.email;
+            document.getElementById('menuBtn').style.display = 'block';
+        }
+
+        function saveUserData() {
+            if(currentUser && currentUser.email) {
+                localStorage.setItem('user_' + currentUser.email, JSON.stringify(currentUser));
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('current_logged_user');
+            currentUser = null;
+            alert("আপনি লগআউট করেছেন।");
+            document.getElementById('menuBtn').style.display = 'none';
+            showPage('auth');
+        }
+
+        function openProofModal(taskName, reward) {
+            activeTaskReward = reward;
+            document.getElementById('modalTaskName').innerText = taskName + " (পুরস্কার: " + reward + " টাকা)";
+            document.getElementById('proofModal').style.display = 'flex';
+        }
+
+        function closeProofModal() {
+            document.getElementById('proofModal').style.display = 'none';
+            document.getElementById('proofUsername').value = '';
+            document.getElementById('proofFile').value = '';
+        }
+
+        function submitProof() {
+            const username = document.getElementById('proofUsername').value.trim();
+            const file = document.getElementById('proofFile').value;
+
+            if(!username || !file) {
+                alert("ইউজারনেম এবং কাজের স্ক্রিনশট ফাইল আপলোড করুন!");
+                return;
+            }
+
+            currentUser.balance += activeTaskReward;
+            currentUser.tasksCompleted = (currentUser.tasksCompleted || 0) + 1;
+            saveUserData();
+            updateUserUI();
+
+            alert("আপনার কাজের প্রুফ সফলভাবে জমা হয়েছে! অ্যাকাউন্টে " + activeTaskReward + " টাকা যোগ করা হয়েছে।");
+            closeProofModal();
+        }
+
+        function copyReferLink() {
+            const copyText = document.getElementById("referLink");
+            copyText.select();
+            navigator.clipboard.writeText(copyText.value);
+            alert("আপনার রেফারেল লিংক কপি করা হয়েছে! বন্ধুদের সাথে শেয়ার করুন।");
+        }
+
+        function claimReferralBonus() {
+            const friendId = document.getElementById('referredFriendId').value.trim().toLowerCase();
+            if(!friendId) {
+                alert("বন্ধুর ইমেইল/ইউজার আইডি লিখুন!");
+                return;
+            }
+
+            if(friendId === currentUser.email) {
+                alert("নিজেকে নিজে রেফার করা যাবে না!");
+                return;
+            }
+
+            const friendData = localStorage.getItem('user_' + friendId);
+            if(!friendData) {
+                alert("এই ইউজার আইডি বিশিষ্ট কোনো অ্যাকাউন্ট পাওয়া যায়নি!");
+                return;
+            }
+
+            const parsedFriend = JSON.parse(friendData);
+            if((parsedFriend.tasksCompleted || 0) < 2) {
+                alert("আপনার বন্ধু এখনো ২টি টাস্ক সম্পন্ন করেনি! ২টি কাজ শেষ করার পর আবার বোনাস দাবী করুন।");
+                return;
+            }
+
+            currentUser.refers += 1;
+            currentUser.balance += 100;
+            saveUserData();
+            updateUserUI();
+
+            document.getElementById('referredFriendId').value = '';
+            alert("অভিনন্দন! আপনার বন্ধু ২টি কাজ সম্পন্ন করেছে। ১০০ টাকা রেফারেল বোনাস জমা করা হয়েছে।");
+        }
+
+        function handleWithdraw() {
+            const phone = document.getElementById('withdrawPhone').value.trim();
+            const amount = parseFloat(document.getElementById('withdrawAmount').value);
+
+            if(phone.length < 11) {
+                alert("সঠিক ১১ ডিজিটের মোবাইল নম্বর দিন!");
+                return;
+            }
+
+            if(!amount || amount < 500) {
+                alert("সর্বনিম্ন উইথড্র সীমা ৫০০ টাকা!");
+                return;
+            }
+
+            if(amount > currentUser.balance) {
+                alert("আপনার অ্যাকাউন্টে পর্যাপ্ত ব্যালেন্স নেই!");
+                return;
+            }
+
+            // ১০টি রেফারের আসল শর্ত উইথড্র করার সময় যাচাই হবে
+            if(currentUser.refers < 10) {
+                alert("আপনার উইথড্র প্রসেস করার জন্য ১০ টি সফল রেফার করা প্রয়োজন! আপনার বর্তমান রেফার: " + currentUser.refers + " টি। রেফারেল পাতায় গিয়ে বন্ধুর আইডি বসিয়ে বোনাস রিডিম করুন।");
+                showPage('refer');
+                return;
+            }
+
+            currentUser.balance -= amount;
+            saveUserData();
+            updateUserUI();
+
+            alert("আপনার উইথড্র রিকোয়েস্ট সফল হয়েছে! খুব শীঘ্রই পেমেন্ট প্রসেস করা হবে।");
+        }
+    </script>
+</body>
+</html>
